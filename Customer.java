@@ -28,7 +28,8 @@ public class Customer implements Runnable {
         bakery.store.acquire();
            
         //get bread
-        
+        System.out.println("shopping...");
+        Thread.sleep(shopTime);
         for (int i = 0; i < shoppingCart.size(); i++){
             int num;
             
@@ -44,14 +45,12 @@ public class Customer implements Runnable {
             }
 
             bakery.shelves[num].acquire();
-            Thread.sleep(shopTime);
-            bakery.takeBread(bread);
+            
+            bakery.takeBread(shoppingCart[i]);
             bakery.shelves[num].release();
 
         }
         
-        
-
         //check out
         bakery.cashier.acquire();
         Thread.sleep(checkoutTime);
