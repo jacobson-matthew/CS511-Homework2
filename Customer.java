@@ -28,9 +28,25 @@ public class Customer implements Runnable {
         bakery.store.acquire();
            
         //get bread
+        
+        for (int i = 0; i < shoppingCart.size(); i++){
+            int num;
+            
+            switch (shoppingCart[i]){
+                case BreadType.SOURDOUGH: 
+                    num = 0;
+                case BreadType.RYE:       
+                    num = 1;
+                case BreadType.WONDER:    
+                    num = 2;
+                case:
+                    System.out.println("not an option");
+            }
 
-        for (i = 0; i < shoppingCart.size(); i++){
-
+            bakery.shelves[num].acquire();
+            Thread.sleep(shopTime);
+            bakery.takeBread(bread);
+            bakery.shelves[num].release();
 
         }
         
