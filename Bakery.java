@@ -3,7 +3,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Semaphore;
-import java.util.*;
 
 public class Bakery implements Runnable {
     private static final int TOTAL_CUSTOMERS = 200;
@@ -12,38 +11,46 @@ public class Bakery implements Runnable {
     private Map<BreadType, Integer> availableBread;
     private ExecutorService executor;
     private float sales = 0;
+	
+	private int rcount = 0;
+	private int scount = 0;
+	private int wcount = 0;
+	private int purch = 0;
+	public int purcheck = 0;
+	public int totalitemsadded = 0;
 
     // TODO
-    Semaphore cashier = new Semaphore(4);    
-    Semaphore[] shelves = new Semaphore[3];
-    shelves[0] = new Semaphore(1); // Rye bread
-    shelves[1] = new Semaphore(1); // Sourdough bread
-    shelves[2] = new Semaphore(1); // wonder bread
+	
+	Semaphore cashier = new Semaphore(4);    
+	Semaphore [] shelves = new Semaphore [] {new Semaphore(1),new Semaphore(1),new Semaphore(1)};
     Semaphore store = new Semaphore(ALLOWED_CUSTOMERS);
     Semaphore stocking = new Semaphore(0);
-    
-    // public void checkout(Customer cust){
-    //     try{
-    //     Thread.sleep(cust.getTime());
-    //     }catch(InterruptedException e){
-    //         System.out.println(e);
-    //     }
-    // }
+	Semaphore allcustdone = new Semaphore(0);
+	Semaphore adjustsale = new Semaphore(1);
+	Semaphore restock = new Semaphore(1);
+
 
     /**
      * Remove a loaf from the available breads and restock if necessary
      */
     public void takeBread(BreadType bread) {
-        int num;
-        if(bread == RYE){
-            num = 0;
-        }else if(bread == SOURDOUGH){
-            num = 1;
-        }else if(bread == WONDER){
-            num = 2;
-        }
-
-
+		//-------------------------------------------------------------------------------
+		switch (bread){
+			case SOURDOUGH:
+				purch++;
+				scount++;
+				break;
+			case RYE:     
+				purch++;
+				rcount++;
+				break;
+			case WONDER:  
+				purch++;
+				wcount++;
+				break;
+		}
+		//-------------------------------------------------------------------------------
+		
         int breadLeft = availableBread.get(bread);
         if (breadLeft > 0) {
             availableBread.put(bread, breadLeft - 1);
@@ -55,7 +62,14 @@ public class Bakery implements Runnable {
             } catch (InterruptedException ie) {
                 ie.printStackTrace();
             }
+			
+			try {
+                restock.acquire();
+            } catch (InterruptedException ie) {
+                ie.printStackTrace();
+            }
             availableBread.put(bread, FULL_BREAD - 1);
+			restock.release();
         }
     }
 
@@ -63,7 +77,15 @@ public class Bakery implements Runnable {
      * Add to the total sales
      */
     public void addSales(float value) {
+		try{
+			adjustsale.acquire();
+		} catch (InterruptedException ie) {
+			ie.printStackTrace();
+        }
+		
         sales += value;
+		adjustsale.release();
+		
     }
 
     /**
@@ -76,33 +98,37 @@ public class Bakery implements Runnable {
         availableBread.put(BreadType.WONDER, FULL_BREAD);
 
         // TODO
-        //bakery
-        
-        //obj to make 
-        ExecutorService executorService = Executors.newFixedThreadPool(TOTAL_CUSTOMERS);
+		
+		ExecutorService executorService = Executors.newFixedThreadPool(TOTAL_CUSTOMERS);
         //make our 200 customers
 
         for (int i = 0; i < TOTAL_CUSTOMERS; i++){
             executorService.execute(new Customer(this));
         }
         executorService.shutdown();
-        // take customers from outside of store and bring them in
-        
-
-    
-
-        //take bread 
-
-
-        //go to cashier
-
-
-        //exit protocol
-        
-
-
-    
-    
+		
+		
+		
+		for (int i = 0; i < TOTAL_CUSTOMERS; i++){
+			try{
+				allcustdone.acquire();
+			} catch (InterruptedException e){
+				e.printStackTrace();
+			}
+		}
+		System.out.println("----------------------------------------");
+		System.out.printf("Total Sales: %.2f\n", sales);
+		System.out.println("----------------------------------------");
+		System.out.println("Sourdough:    " + scount);
+		System.out.println("Rye:          " + rcount);
+		System.out.println("Wonder Bread: " + wcount);
+		System.out.println("----------------------------------------");
+		
+		/*System.out.println("Total Purchases: " + purch);
+		System.out.println("Items Added to Cart: " + purcheck);
+		System.out.println("Items added to sales: " + totalitemsadded);*/
+		//System.out.printf("%.2f\n", (scount * 4.99 + rcount * 3.99 + wcount * 5.99));
+		
+		
     }
-    
 }

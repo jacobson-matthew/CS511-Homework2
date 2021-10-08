@@ -1,6 +1,7 @@
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.ArrayList;
 
 public class Customer implements Runnable {
     private Bakery bakery;
@@ -13,53 +14,99 @@ public class Customer implements Runnable {
      * Initialize a customer object and randomize its shopping cart
      */
     public Customer(Bakery bakery) {
-        this.bakery = bakery;
+        // TODO
+		this.bakery = bakery;
         this.rnd = new Random();
-        this.shoppingCart = new List<BreadType>();
+        this.shoppingCart = new ArrayList<BreadType>();
         this.shopTime = 500 + rnd.nextInt(500);
         this.checkoutTime = 200 + rnd.nextInt(300);
+		fillShoppingCart();
     }
 
     /**
      * Run tasks for the customer
      */
     public void run() {
-        //go into the store
-        bakery.store.acquire();
-           
-        //get bread
-        System.out.println("shopping...");
-        Thread.sleep(shopTime);
-        for (int i = 0; i < shoppingCart.size(); i++){
-            int num;
-            
-            switch (shoppingCart[i]){
-                case BreadType.SOURDOUGH: 
-                    num = 0;
-                case BreadType.RYE:       
-                    num = 1;
-                case BreadType.WONDER:    
-                    num = 2;
-                case:
-                    System.out.println("not an option");
-            }
-
-            bakery.shelves[num].acquire();
-            
-            bakery.takeBread(shoppingCart[i]);
-            bakery.shelves[num].release();
-
-        }
+        // TODO
+		//go into the store
         
-        //check out
-        bakery.cashier.acquire();
-        Thread.sleep(checkoutTime);
-        bakery.addSales(getItemsValue());
-        bakery.cashier.release();
+			try{
+				bakery.store.acquire();
+			}catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			System.out.println("Customer " + hashCode() + " has started shopping");   
+			//get bread
+			//System.out.println("shopping...");
+			
+			try{
+				Thread.sleep(shopTime);
+			}catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			for (int i = 0; i < shoppingCart.size(); i++){
+				int num = 0;
+				switch (shoppingCart.get(i)){
+					case SOURDOUGH:
+						//System.out.println("item " + i + ": SOURDOUGH");					
+						num = 0;
+						break;
+					case RYE:     
+						//System.out.println("item " + i + ": RYE");						
+						num = 1;
+						break;
+					case WONDER:  
+						//System.out.println("item " + i + ": WONDER");
+						num = 2;
+						break;
+				}
+				
+				try{
+					bakery.shelves[num].acquire();
+				}catch (InterruptedException e) {
+					e.printStackTrace();
+				}	
+				
+				//System.out.println("using shelf: " + num);
+				System.out.println("Customer " + hashCode() + " has taken bread type: " + num + "."); 
+				bakery.takeBread(shoppingCart.get(i));
+				
+				bakery.shelves[num].release();
 
-        //leave store
-        bakery.store.release();
+			}
+			
+			//check out
+			try{
+				bakery.cashier.acquire();
+			}catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			//System.out.println("using cashier");
+			
+			try{
+				Thread.sleep(checkoutTime);
+			}catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			System.out.println("Customer " + hashCode() + " has checked out."); 
+			bakery.addSales(getItemsValue());
+			bakery.cashier.release();
+
+			//leave store
+			bakery.store.release();
+			
+			System.out.println("Customer " + hashCode() + " has left the store."); 
+			
+			bakery.allcustdone.release();
+			
+			
+		
     }
+
     /**
      * Return a string representation of the customer
      */
@@ -76,6 +123,7 @@ public class Customer implements Runnable {
             return false;
         }
         shoppingCart.add(bread);
+		bakery.purcheck++;
         return true;
     }
 
@@ -96,13 +144,9 @@ public class Customer implements Runnable {
     private float getItemsValue() {
         float value = 0;
         for (BreadType bread : shoppingCart) {
+			bakery.totalitemsadded++;
             value += bread.getPrice();
         }
         return value;
     }
-
-    // public int getTime(){
-    //     return checkoutTime;
-    // }
-
 }
