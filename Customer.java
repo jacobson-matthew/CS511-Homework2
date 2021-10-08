@@ -15,12 +15,13 @@ public class Customer implements Runnable {
      */
     public Customer(Bakery bakery) {
         // TODO
+		// add corresponding variables 
 		this.bakery = bakery;
         this.rnd = new Random();
         this.shoppingCart = new ArrayList<BreadType>();
-        this.shopTime = 500 + rnd.nextInt(500);
-        this.checkoutTime = 200 + rnd.nextInt(300);
-		fillShoppingCart();
+        this.shopTime = 500 + rnd.nextInt(500); // generates a wait time between 500ms and 1 second
+        this.checkoutTime = 200 + rnd.nextInt(300); // generates a wait time between 200 and 500 
+		fillShoppingCart(); // Will always need to fill shopping cart (list) when the customer is made
     }
 
     /**
@@ -29,9 +30,8 @@ public class Customer implements Runnable {
     public void run() {
         // TODO
 		//go into the store
-        
 			try{
-				bakery.store.acquire();
+				bakery.store.acquire(); // acquire permit to enter the store
 			}catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -41,14 +41,14 @@ public class Customer implements Runnable {
 			//System.out.println("shopping...");
 			
 			try{
-				Thread.sleep(shopTime);
+				Thread.sleep(shopTime); // time spent shopping for bread 
 			}catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 			
-			for (int i = 0; i < shoppingCart.size(); i++){
+			for (int i = 0; i < shoppingCart.size(); i++){ // for each item in the shopping list
 				int num = 0;
-				switch (shoppingCart.get(i)){
+				switch (shoppingCart.get(i)){ 
 					case SOURDOUGH:
 						//System.out.println("item " + i + ": SOURDOUGH");					
 						num = 0;
@@ -64,20 +64,20 @@ public class Customer implements Runnable {
 				}
 				
 				try{
-					bakery.shelves[num].acquire();
+					bakery.shelves[num].acquire(); //acquire the shelf
 				}catch (InterruptedException e) {
 					e.printStackTrace();
 				}	
 				
 				//System.out.println("using shelf: " + num);
 				System.out.println("Customer " + hashCode() + " has taken bread type: " + num + "."); 
-				bakery.takeBread(shoppingCart.get(i));
+				bakery.takeBread(shoppingCart.get(i)); // take the bread
 				
-				bakery.shelves[num].release();
+				bakery.shelves[num].release(); //let another customer get bread from shelf
 
 			}
 			
-			//check out
+			//check out @ cashier
 			try{
 				bakery.cashier.acquire();
 			}catch (InterruptedException e) {
@@ -87,16 +87,16 @@ public class Customer implements Runnable {
 			//System.out.println("using cashier");
 			
 			try{
-				Thread.sleep(checkoutTime);
+				Thread.sleep(checkoutTime); //"check out"
 			}catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 			
 			System.out.println("Customer " + hashCode() + " has checked out."); 
-			bakery.addSales(getItemsValue());
+			bakery.addSales(getItemsValue()); // get value and add it
 			bakery.cashier.release();
 
-			//leave store
+			//customer leaves store
 			bakery.store.release();
 			
 			System.out.println("Customer " + hashCode() + " has left the store."); 

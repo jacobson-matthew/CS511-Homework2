@@ -11,7 +11,7 @@ public class Bakery implements Runnable {
     private Map<BreadType, Integer> availableBread;
     private ExecutorService executor;
     private float sales = 0;
-	
+	//our variables
 	private int rcount = 0;
 	private int scount = 0;
 	private int wcount = 0;
@@ -20,7 +20,7 @@ public class Bakery implements Runnable {
 	public int totalitemsadded = 0;
 
     // TODO
-	
+	//Our Semaphores 
 	Semaphore cashier = new Semaphore(4);    
 	Semaphore [] shelves = new Semaphore [] {new Semaphore(1),new Semaphore(1),new Semaphore(1)};
     Semaphore store = new Semaphore(ALLOWED_CUSTOMERS);
@@ -35,10 +35,10 @@ public class Bakery implements Runnable {
      */
     public void takeBread(BreadType bread) {
 		//-------------------------------------------------------------------------------
-		switch (bread){
+		switch (bread){ // One case for each type of bread. 
 			case SOURDOUGH:
-				purch++;
-				scount++;
+				purch++; // purchased
+				scount++; //count for that type of bread
 				break;
 			case RYE:     
 				purch++;
@@ -51,9 +51,9 @@ public class Bakery implements Runnable {
 		}
 		//-------------------------------------------------------------------------------
 		
-        int breadLeft = availableBread.get(bread);
+        int breadLeft = availableBread.get(bread); // check how much bread is left of that given type
         if (breadLeft > 0) {
-            availableBread.put(bread, breadLeft - 1);
+            availableBread.put(bread, breadLeft - 1); // take a loaf of bread
         } else {
             System.out.println("No " + bread.toString() + " bread left! Restocking...");
             // restock by preventing access to the bread stand for some time
@@ -63,7 +63,7 @@ public class Bakery implements Runnable {
                 ie.printStackTrace();
             }
 			
-			try {
+			try { // block shelf 
                 restock.acquire();
             } catch (InterruptedException ie) {
                 ie.printStackTrace();
@@ -77,7 +77,7 @@ public class Bakery implements Runnable {
      * Add to the total sales
      */
     public void addSales(float value) {
-		try{
+		try{ // add semaphore to ensure that addSales is atomic
 			adjustsale.acquire();
 		} catch (InterruptedException ie) {
 			ie.printStackTrace();
