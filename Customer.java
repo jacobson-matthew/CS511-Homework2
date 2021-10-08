@@ -2,7 +2,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.ArrayList;
-
+//I pledge my honor that I have abided by the Stevens Honor System - Matthew Jacobson, Jared Follet
 public class Customer implements Runnable {
     private Bakery bakery;
     private Random rnd;

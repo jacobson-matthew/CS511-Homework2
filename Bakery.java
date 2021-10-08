@@ -3,7 +3,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Semaphore;
-
+//I pledge my honor that I have abided by the Stevens Honor System - Matthew Jacobson, Jared Follet
 public class Bakery implements Runnable {
     private static final int TOTAL_CUSTOMERS = 200;
     private static final int ALLOWED_CUSTOMERS = 50;
@@ -124,10 +124,10 @@ public class Bakery implements Runnable {
 		System.out.println("Wonder Bread: " + wcount);
 		System.out.println("----------------------------------------");
 		
-		/*System.out.println("Total Purchases: " + purch);
-		System.out.println("Items Added to Cart: " + purcheck);
-		System.out.println("Items added to sales: " + totalitemsadded);*/
-		//System.out.printf("%.2f\n", (scount * 4.99 + rcount * 3.99 + wcount * 5.99));
+		// System.out.println("Total Purchases: " + purch);
+		// System.out.println("Items Added to Cart: " + purcheck);
+		// System.out.println("Items added to sales: " + totalitemsadded);
+		// System.out.printf("%.2f\n", (scount * 4.99 + rcount * 3.99 + wcount * 5.99));
 		
 		
     }
